@@ -1,5 +1,8 @@
 import socket
 from _thread import *
+from player import Player
+from game import Game
+import pickle
 import sys
 
 # always run server script first, before you can run multiple client script (multiplayer)
@@ -15,25 +18,34 @@ except socket.error as e:
     str(e)
 
 s.listen(2)  # number of client connecting to server eg number of players
+# s.listen()  # unlimited players, use game id to limit players
 print("Waiting for a connection. Server started.")
 
+# initialize players
+# store player health and cards here
+players = [Player(0, 0, 50, 50, (255, 0, 0)), Player(100, 100, 50, 50, (0, 0, 255))]
 
-def threaded_client(conn):
-    conn.send(str.encode("Connected"))
+
+def threaded_client(conn, player):
+    conn.send(pickle.dumps(players[player]))
     reply = ""
     while True:
         try:
-            data = conn.recv(2048)  # the amount of info we trying to receive
-            reply = data.decode("utf-8")  # when sending data need encode, so receive need decode
+            data = pickle.loads(conn.recv(2048))  # the amount of info we trying to receive
+            players[player] = data
 
             if not data:
                 print("Disconnected")
                 break
             else:
-                print("Received: ", reply)
-                print("Sending: ", reply)
+                if player == 1:
+                    reply = players[0]
+                else:
+                    reply = players[1]
+                # print("Received: ", data)
+                # print("Sending: ", reply)
 
-            conn.sendall(str.encode(reply))  # send data need encode
+            conn.sendall(pickle.dumps(reply))  # send data need encode
 
         except:
             break
@@ -42,8 +54,10 @@ def threaded_client(conn):
     conn.close()
 
 
+currentPlayer = 0
 while True:
     conn, addr = s.accept()  # accept incoming connection and store connection and address to conn and addr
     print("Connected to:", addr)
 
-    start_new_thread(threaded_client, (conn, ))  # to run threaded_client without stopping the while loop (using thread)
+    start_new_thread(threaded_client, (conn, currentPlayer))  # to run threaded_client without stopping the while loop (using thread)
+    currentPlayer += 1  # a new player connected
