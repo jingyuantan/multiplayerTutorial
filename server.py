@@ -27,11 +27,15 @@ players = [Player(0, 0, 50, 50, (255, 0, 0)), Player(100, 100, 50, 50, (0, 0, 25
 
 
 def threaded_client(conn, player):
+    # when we connect we want to send something immediately back to the object that connected to us (client.network)
+    # this will be sent to network.py, look at def connect()
+    # return pickle.loads(self.client.recv(2048)) <------ this will receive the following data, in this case the player's data
     conn.send(pickle.dumps(players[player]))
     reply = ""
     while True:
         try:
-            data = pickle.loads(conn.recv(2048))  # the amount of info we trying to receive
+            # receive data from the connection (client.py)
+            data = pickle.loads(conn.recv(2048))  # 2048=the amount of info we trying to receive, can increase/decrease
             players[player] = data
 
             if not data:
@@ -55,6 +59,8 @@ def threaded_client(conn, player):
 
 
 currentPlayer = 0
+# s.listen will continuously looking for connection
+# if there is incoming connection, this while loop will accept the connection etc and go back to s.listen
 while True:
     conn, addr = s.accept()  # accept incoming connection and store connection and address to conn and addr
     print("Connected to:", addr)

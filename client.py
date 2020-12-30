@@ -18,7 +18,7 @@ def redrawWindow(win, player, player2):
 def main():
     run = True
     n = Network()
-    p1 = n.getP()
+    p1 = n.getP()  # p1 is player defined using player class (returned from server.py)
     while run:
         p2 = n.send(p1)
         for event in pygame.event.get():

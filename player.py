@@ -12,6 +12,9 @@ class Player:
         self.vel = 1
 
     def draw(self, win):
+        # call .draw after .move
+        # move is to update the current location of player
+        # draw is to draw out the current location of player
         pygame.draw.rect(win, self.color, self.rect)
 
     def move(self):
